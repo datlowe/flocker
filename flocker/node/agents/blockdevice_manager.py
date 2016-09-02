@@ -6,6 +6,7 @@ Interactions between the OS pertaining to block devices.
 This controls actions such as formatting and mounting a blockdevice.
 """
 
+import datetime
 import psutil
 from subprocess import CalledProcessError, check_output, STDOUT
 
@@ -257,6 +258,10 @@ class BlockDeviceManager(PClass):
     """
 
     def make_filesystem(self, blockdevice, filesystem):
+	    fh = open("/tmp/flocker_debug.log", "a")
+        fh.write(str(datetime.datetime.now()) + ": " + "attempt to mkfs "+filesystem.encode("ascii")+" "+blockdevice.path + "\n")
+        fh.close
+		"""
         result = _run_command([
             b"mkfs", b"-t", filesystem.encode("ascii"),
             # This is ext4 specific, and ensures mke2fs doesn't ask
@@ -269,8 +274,10 @@ class BlockDeviceManager(PClass):
         if not result.succeeded:
             raise MakeFilesystemError(blockdevice=blockdevice,
                                       source_message=result.error_message)
+		"""
 
     def has_filesystem(self, blockdevice):
+	    """
         try:
             check_output(
                 [b"blkid", b"-p", b"-u", b"filesystem", blockdevice.path],
@@ -291,6 +298,8 @@ class BlockDeviceManager(PClass):
                 # There is no filesystem on this device.
                 return False
             raise
+		"""
+		# Always return true, filesystem initialization should be external
         return True
 
     def mount(self, blockdevice, mountpoint):
